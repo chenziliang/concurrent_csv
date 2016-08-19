@@ -23,5 +23,5 @@ _testmain.go
 *.test
 *.prof
 examples/chunker_example
-examples/concurrent_csv_example
+examples/concurrent_parser_example
 test.*
