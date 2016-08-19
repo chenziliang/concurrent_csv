@@ -57,7 +57,7 @@ func (w *QuoteNewlineAdjustmentWorker) Parse() {
 
 		for i < w.chunkEnd && w.firstUnquotedNewline < 0 {
 			if inQuote {
-				for ; i < w.chunkEnd ; i++ {
+				for ; i < w.chunkEnd; i++ {
 					if w.data[i] == '"' {
 						w.numQuotes++
 						inQuote = false

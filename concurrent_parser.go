@@ -86,6 +86,7 @@ func (p *ConcurrentParser) ReadAll() ([][][]string, error) {
 	recordsChan := make(chan *chunkResult)
 	errsChan := make(chan error)
 	done := make(chan bool)
+	pollDone := make(chan bool)
 
 	var results []*chunkResult
 	var allErrs []error
@@ -99,6 +100,7 @@ func (p *ConcurrentParser) ReadAll() ([][][]string, error) {
 					allErrs = append(allErrs, err)
 				}
 			case <-done:
+				pollDone <- true
 				return
 			}
 		}
@@ -131,6 +133,7 @@ func (p *ConcurrentParser) ReadAll() ([][][]string, error) {
 
 	wg.Wait()
 	done <- true
+	<-pollDone
 
 	if allErrs != nil && len(allErrs) > 0 {
 		return nil, errors.New(fmt.Sprintf("%s", allErrs))
