@@ -21,35 +21,33 @@ func NewQuoteNewlineAdjustmentWorker(data []byte, chunkStart, chunkEnd int64) *Q
 }
 
 func (w *QuoteNewlineAdjustmentWorker) Parse() {
-	current := w.chunkStart
 	inQuote := false
+	i := w.chunkStart
 
-	var i int64 = 0
-	nread := w.chunkEnd - w.chunkStart
-	for current <= w.chunkEnd {
-		for i < nread && w.firstUnquotedNewline < 0 && w.firstQuotedNewline < 0 {
+	for i < w.chunkEnd {
+		for i < w.chunkEnd && w.firstUnquotedNewline < 0 && w.firstQuotedNewline < 0 {
 			if inQuote {
-				for ; i < nread; i++ {
+				for ; i < w.chunkEnd; i++ {
 					if w.data[i] == '"' {
 						w.numQuotes++
 						inQuote = false
 						i++
 						break
 					} else if w.data[i] == '\n' {
-						w.firstQuotedNewline = current + i
+						w.firstQuotedNewline = i
 						i++
 						break
 					}
 				}
 			} else {
-				for ; i < nread; i++ {
+				for ; i < w.chunkEnd; i++ {
 					if w.data[i] == '"' {
 						w.numQuotes++
 						inQuote = true
 						i++
 						break
 					} else if w.data[i] == '\n' {
-						w.firstUnquotedNewline = current + i
+						w.firstUnquotedNewline = i
 						i++
 						break
 					}
@@ -57,9 +55,9 @@ func (w *QuoteNewlineAdjustmentWorker) Parse() {
 			}
 		}
 
-		for i < nread && w.firstUnquotedNewline < 0 {
+		for i < w.chunkEnd && w.firstUnquotedNewline < 0 {
 			if inQuote {
-				for ; i < nread; i++ {
+				for ; i < w.chunkEnd ; i++ {
 					if w.data[i] == '"' {
 						w.numQuotes++
 						inQuote = false
@@ -68,14 +66,14 @@ func (w *QuoteNewlineAdjustmentWorker) Parse() {
 					}
 				}
 			} else {
-				for ; i < nread; i++ {
+				for ; i < w.chunkEnd; i++ {
 					if w.data[i] == '"' {
 						w.numQuotes++
 						inQuote = true
 						i++
 						break
 					} else if w.data[i] == '\n' {
-						w.firstUnquotedNewline = current + i
+						w.firstUnquotedNewline = i
 						i++
 						break
 					}
@@ -83,22 +81,22 @@ func (w *QuoteNewlineAdjustmentWorker) Parse() {
 			}
 		}
 
-		for i < nread && w.firstQuotedNewline < 0 {
+		for i < w.chunkEnd && w.firstQuotedNewline < 0 {
 			if inQuote {
-				for ; i < nread; i++ {
+				for ; i < w.chunkEnd; i++ {
 					if w.data[i] == '"' {
 						w.numQuotes++
 						inQuote = false
 						i++
 						break
 					} else if w.data[i] == '\n' {
-						w.firstQuotedNewline = current + i
+						w.firstQuotedNewline = i
 						i++
 						break
 					}
 				}
 			} else {
-				for ; i < nread; i++ {
+				for ; i < w.chunkEnd; i++ {
 					if w.data[i] == '"' {
 						w.numQuotes++
 						inQuote = true
@@ -111,9 +109,9 @@ func (w *QuoteNewlineAdjustmentWorker) Parse() {
 
 		// If we got here, then either we've found both the first quoted newline and
 		// unquoted newline, or we've processed all the data in the buffer.
-		for i < nread {
+		for i < w.chunkEnd {
 			if inQuote {
-				for ; i < nread; i++ {
+				for ; i < w.chunkEnd; i++ {
 					if w.data[i] == '"' {
 						w.numQuotes++
 						inQuote = false
@@ -122,7 +120,7 @@ func (w *QuoteNewlineAdjustmentWorker) Parse() {
 					}
 				}
 			} else {
-				for ; i < nread; i++ {
+				for ; i < w.chunkEnd; i++ {
 					if w.data[i] == '"' {
 						w.numQuotes++
 						inQuote = true
@@ -132,7 +130,6 @@ func (w *QuoteNewlineAdjustmentWorker) Parse() {
 				}
 			}
 		}
-		current += nread
 	}
 }
 

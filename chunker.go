@@ -69,15 +69,15 @@ func (chunker *TextChunker) computeOffsets(allowQuotedNewlines bool) error {
 	startOfChunk := chunker.startingOffset
 
 	for workerId := 0; workerId < chunker.maximumChunks; workerId++ {
-		endOfChunk := minInt64(chunker.length - 1, startOfChunk+chunkSize)
+		endOfChunk := minInt64(chunker.length, startOfChunk+chunkSize)
 		if workerId == chunker.maximumChunks-1 {
-			endOfChunk = chunker.length - 1
+			endOfChunk = chunker.length
 		}
 
 		chunker.startOfChunk = append(chunker.startOfChunk, startOfChunk)
 		chunker.endOfChunk = append(chunker.endOfChunk, endOfChunk)
 
-		startOfChunk = minInt64(chunker.length - 1, endOfChunk+1)
+		startOfChunk = minInt64(chunker.length, endOfChunk)
 	}
 
 	if chunker.allowQuotedNewlines {
@@ -94,7 +94,7 @@ func (chunker *TextChunker) adjustOffsetsAccordingToUnquotedNewlines() error {
 		}
 
 		newEnd := chunker.endOfChunk[workerId]
-		for ; newEnd < chunker.length - 1; newEnd++ {
+		for ; newEnd < chunker.length; newEnd++ {
 			if chunker.data[newEnd] == '\n' {
 				break
 			}
@@ -109,8 +109,8 @@ func (chunker *TextChunker) adjustOffsetsAccordingToUnquotedNewlines() error {
 				chunker.startOfChunk[otherWorkerId] = 0
 				chunker.endOfChunk[otherWorkerId] = 0
 			} else if chunker.startOfChunk[otherWorkerId] < newEnd {
-				chunker.startOfChunk[otherWorkerId] = newEnd + 1
-				chunker.endOfChunk[otherWorkerId] = maxInt64(chunker.endOfChunk[otherWorkerId], newEnd+1)
+				chunker.startOfChunk[otherWorkerId] = newEnd
+				chunker.endOfChunk[otherWorkerId] = maxInt64(chunker.endOfChunk[otherWorkerId], newEnd)
 			}
 		}
 	}
