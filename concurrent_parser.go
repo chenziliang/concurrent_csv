@@ -75,8 +75,13 @@ func (res bySequence) Less(i, j int) bool {
 
 // ReadAll returns a list of CSV records set ([][]string) which preserves the same sequence
 // as in origin data. The reason this function doesn't merge all records into one CSV record
-// set is to avoid unnecessary memory reallocation
+// set is to avoid unnecessary memory reallocation.
+// If NumCPU sets to 1, it will fallback to sequence parsing
 func (p *ConcurrentParser) ReadAll() ([][][]string, error) {
+	if p.NumCPU == 1 {
+		return p.doReadAllInSequence()
+	}
+
 	chunker := NewTextChunker(p.data, int64(len(p.data)), 0, p.NumCPU, p.HasQuote)
 	err := chunker.Process()
 	if err != nil {
@@ -145,6 +150,19 @@ func (p *ConcurrentParser) ReadAll() ([][][]string, error) {
 		records = append(records, result.records)
 	}
 	return records, nil
+}
+
+func (p *ConcurrentParser) doReadAllInSequence() ([][][]string, error){
+	reader := p.getCsvReader(bytes.NewReader(p.data))
+	results, err := reader.ReadAll()
+	if err != nil {
+		return nil, err
+	}
+
+	if results != nil {
+		return [][][]string{results}, nil
+	}
+	return nil, nil
 }
 
 func (p *ConcurrentParser) getCsvReader(r io.Reader) *csv.Reader {
