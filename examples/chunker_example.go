@@ -7,7 +7,7 @@ import (
 )
 
 func main() {
-	data, err := ioutil.ReadFile("test.csv2")
+	data, err := ioutil.ReadFile("test.csv")
 	if err != nil {
 		panic(err)
 	}
