@@ -22,3 +22,6 @@ _testmain.go
 *.exe
 *.test
 *.prof
+examples/chunker_example
+examples/concurrent_csv_example
+test.*

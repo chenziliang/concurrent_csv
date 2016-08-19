@@ -13,15 +13,17 @@ func main() {
 		panic(err)
 	}
 
-	r := concurrent_csv.NewConcurrentReader(data)
+	r := concurrent_csv.NewConcurrentParser(data)
 	start := time.Now().UnixNano()
-	rows, err := r.ReadAll()
+	rowLists, err := r.ReadAll()
 	if err != nil {
-		fmt.Println(err)
+		panic(err)
 	}
+
 	cost := time.Now().UnixNano() - start
-	/*for _, row := range rows {
-		fmt.Printf("%s\n", row)
-	}*/
-	fmt.Printf("bytes.Reader, rows=%d, cost=%.5g seconds\n", len(rows), float64(cost)/1000000000.0)
+	total := 0
+	for _, rows := range rowLists {
+		total += len(rows)
+	}
+	fmt.Printf("bytes.Reader, rows=%d, cost=%.5g seconds\n", total, float64(cost)/1000000000.0)
 }
